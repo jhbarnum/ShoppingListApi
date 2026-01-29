@@ -1,41 +1,69 @@
+using Microsoft.EntityFrameworkCore;
+using ShoppingList.Api.Data;
+using ShoppingList.Api.Models;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+// SQLite DB
+builder.Services.AddDbContext<AppDbContext>(opt =>
+    opt.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// CORS for React dev server
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("dev", p =>
+        p.WithOrigins("http://localhost:5173")
+         .AllowAnyHeader()
+         .AllowAnyMethod());
+});
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+app.UseCors("dev");
+
+// Ensure DB exists + apply migrations automatically (dev-friendly)
+using (var scope = app.Services.CreateScope())
 {
-    app.MapOpenApi();
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.Migrate();
 }
 
-app.UseHttpsRedirection();
-
-var summaries = new[]
+app.MapGet("/api/items", async (AppDbContext db) =>
 {
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+    var items = await db.ShoppingItems
+        .OrderByDescending(x => x.CreatedUtc)       
+        .ToListAsync();
 
-app.MapGet("/weatherforecast", () =>
+    return Results.Ok(items);
+});
+
+app.MapPost("/api/items", async (CreateShoppingItemRequest req, AppDbContext db) =>
 {
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
+    if (string.IsNullOrWhiteSpace(req.Name))
+        return Results.BadRequest("Name is required.");
+
+    var item = new ShoppingItem
+    {
+        Name = req.Name.Trim(),
+        Quantity = req.Quantity <= 0 ? 1 : req.Quantity,
+        IsChecked = req.IsChecked
+    };
+
+    db.ShoppingItems.Add(item);
+    await db.SaveChangesAsync();
+
+    return Results.Created($"/api/items/{item.Id}", item);
+});
+
+app.MapDelete("/api/items/{id:guid}", async (Guid id, AppDbContext db) =>
+{
+    var item = await db.ShoppingItems.FindAsync(id);
+    if (item is null) return Results.NotFound();
+
+    db.ShoppingItems.Remove(item);
+    await db.SaveChangesAsync();
+
+    return Results.NoContent();
+});
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
