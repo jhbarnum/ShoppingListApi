@@ -8,6 +8,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<AppDbContext>(opt =>
     opt.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// Add controllers
+builder.Services.AddControllers();
+
 // CORS for React dev server
 builder.Services.AddCors(options =>
 {
@@ -28,42 +31,7 @@ using (var scope = app.Services.CreateScope())
     db.Database.Migrate();
 }
 
-app.MapGet("/api/items", async (AppDbContext db) =>
-{
-    var items = await db.ShoppingItems
-        .OrderByDescending(x => x.CreatedUtc)       
-        .ToListAsync();
-
-    return Results.Ok(items);
-});
-
-app.MapPost("/api/items", async (CreateShoppingItemRequest req, AppDbContext db) =>
-{
-    if (string.IsNullOrWhiteSpace(req.Name))
-        return Results.BadRequest("Name is required.");
-
-    var item = new ShoppingItem
-    {
-        Name = req.Name.Trim(),
-        Quantity = req.Quantity <= 0 ? 1 : req.Quantity,
-        IsChecked = req.IsChecked
-    };
-
-    db.ShoppingItems.Add(item);
-    await db.SaveChangesAsync();
-
-    return Results.Created($"/api/items/{item.Id}", item);
-});
-
-app.MapDelete("/api/items/{id:guid}", async (Guid id, AppDbContext db) =>
-{
-    var item = await db.ShoppingItems.FindAsync(id);
-    if (item is null) return Results.NotFound();
-
-    db.ShoppingItems.Remove(item);
-    await db.SaveChangesAsync();
-
-    return Results.NoContent();
-});
+// Use controllers for API endpoints
+app.MapControllers();
 
 app.Run();
