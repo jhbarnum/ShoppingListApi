@@ -56,4 +56,17 @@ public class ShoppingItemsController : ControllerBase
 
         return NoContent();
     }
+
+    [HttpPatch("{id:guid}")]
+    public async Task<IActionResult> Patch(Guid id, [FromBody] UpdateShoppingItemRequest req)
+    {
+        var item = await _db.ShoppingItems.FindAsync(id);
+        if (item is null) return NotFound();
+
+        item.IsChecked = req.IsChecked;
+        _db.ShoppingItems.Update(item);
+        await _db.SaveChangesAsync();
+
+        return Ok(item);
+    }
 }

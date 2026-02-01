@@ -57,48 +57,72 @@ export default function App() {
   }
 
   return (
-    <div style={{ maxWidth: 720, margin: "40px auto", fontFamily: "system-ui" }}>
-      <h1>Shopping List</h1>
+    <div className="app">
+      <header className="app-header">
+        <h1>Shopping List</h1>
+        <p className="subtitle">A simple, elegant way to manage your groceries</p>
+      </header>
 
-      <form onSubmit={addItem} style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+      <form className="add-form" onSubmit={addItem}>
         <input
+          className="input input-text"
           placeholder="Item name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          style={{ flex: 1, padding: 10 }}
         />
         <input
+          className="input input-number"
           type="number"
           min="1"
           value={quantity}
           onChange={(e) => setQuantity(e.target.value)}
-          style={{ width: 100, padding: 10 }}
         />
-        <button disabled={loading || !name.trim()} style={{ padding: "10px 14px" }}>
+        <button className="btn primary" disabled={loading || !name.trim()}>
           {loading ? "Adding..." : "Add"}
         </button>
       </form>
 
-      {error && <div style={{ color: "crimson", marginBottom: 12 }}>{error}</div>}
+      {error && <div className="error">{error}</div>}
 
-      <ul style={{ listStyle: "none", padding: 0 }}>
+      <ul className="item-list">
         {items.map((item) => (
-          <li
-            key={item.id}
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              padding: 12,
-              border: "1px solid #ddd",
-              borderRadius: 8,
-              marginBottom: 8,
-            }}
-          >
-            <div>
-              <div style={{ fontWeight: 600 }}>{item.name}</div>
-              <div style={{ opacity: 0.7 }}>Qty: {item.quantity}</div>
+          <li key={item.id} className={`item-card ${item.isChecked ? 'checked' : ''}`}>
+            <div className="item-info">
+              <label className="checkbox-label">
+                <input
+                  className="checkbox-input"
+                  type="checkbox"
+                  checked={item.isChecked}
+                  onChange={async (e) => {
+                    const newVal = e.target.checked;
+                    try {
+                      // optimistic UI
+                      setItems((prev) => prev.map(x => x.id === item.id ? {...x, isChecked: newVal} : x));
+                      const res = await fetch(`/api/items/${item.id}`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ isChecked: newVal }),
+                      });
+                      if (!res.ok) throw new Error('Failed to update item');
+                    } catch (err) {
+                      // revert on error
+                      setItems((prev) => prev.map(x => x.id === item.id ? {...x, isChecked: item.isChecked} : x));
+                      setError(err.message || 'Update failed');
+                    }
+                  }}
+                />
+                <span className="checkbox-ui" aria-hidden="true" />
+                <div>
+                  <div className="item-name">{item.name}</div>
+                  <div className="item-qty">Qty: {item.quantity}</div>
+                </div>
+              </label>
             </div>
-            <button onClick={() => deleteItem(item.id)}>Delete</button>
+            <div className="item-actions">
+              <button className="btn danger" onClick={() => deleteItem(item.id)}>
+                Delete
+              </button>
+            </div>
           </li>
         ))}
       </ul>
