@@ -86,10 +86,37 @@ export default function App() {
 
       <ul className="item-list">
         {items.map((item) => (
-          <li key={item.id} className="item-card">
+          <li key={item.id} className={`item-card ${item.isChecked ? 'checked' : ''}`}>
             <div className="item-info">
-              <div className="item-name">{item.name}</div>
-              <div className="item-qty">Qty: {item.quantity}</div>
+              <label className="checkbox-label">
+                <input
+                  className="checkbox-input"
+                  type="checkbox"
+                  checked={item.isChecked}
+                  onChange={async (e) => {
+                    const newVal = e.target.checked;
+                    try {
+                      // optimistic UI
+                      setItems((prev) => prev.map(x => x.id === item.id ? {...x, isChecked: newVal} : x));
+                      const res = await fetch(`/api/items/${item.id}`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ isChecked: newVal }),
+                      });
+                      if (!res.ok) throw new Error('Failed to update item');
+                    } catch (err) {
+                      // revert on error
+                      setItems((prev) => prev.map(x => x.id === item.id ? {...x, isChecked: item.isChecked} : x));
+                      setError(err.message || 'Update failed');
+                    }
+                  }}
+                />
+                <span className="checkbox-ui" aria-hidden="true" />
+                <div>
+                  <div className="item-name">{item.name}</div>
+                  <div className="item-qty">Qty: {item.quantity}</div>
+                </div>
+              </label>
             </div>
             <div className="item-actions">
               <button className="btn danger" onClick={() => deleteItem(item.id)}>
