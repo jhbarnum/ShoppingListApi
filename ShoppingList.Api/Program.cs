@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using ShoppingList.Api.Data;
-using ShoppingList.Api.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,6 +23,9 @@ var app = builder.Build();
 
 app.UseCors("dev");
 
+var dataDir = Path.Combine(app.Environment.ContentRootPath, "App_Data");
+Directory.CreateDirectory(dataDir);
+
 // Ensure DB exists + apply migrations automatically (dev-friendly)
 using (var scope = app.Services.CreateScope())
 {
@@ -32,6 +34,9 @@ using (var scope = app.Services.CreateScope())
 }
 
 // Use controllers for API endpoints
+app.UseDefaultFiles();
+app.UseStaticFiles();
 app.MapControllers();
+app.MapFallbackToFile("index.html");
 
 app.Run();
