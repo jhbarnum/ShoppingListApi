@@ -36,6 +36,11 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        // Log helpful diagnostic info to stdout/stderr so App Service logs capture it
+        Console.WriteLine($"Environment: {app.Environment.EnvironmentName}");
+        Console.WriteLine($"ContentRootPath: {app.Environment.ContentRootPath}");
+        Console.WriteLine($"Using DB path: {dbPath}");
+
         db.Database.Migrate();
     }
     catch (Exception ex)
@@ -46,10 +51,19 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-// Use controllers for API endpoints
-app.UseDefaultFiles();
-app.UseStaticFiles();
-app.MapControllers();
-app.MapFallbackToFile("index.html");
+// Capture any top-level startup exceptions and log them so App Service shows details
+try
+{
+    // Use controllers for API endpoints
+    app.UseDefaultFiles();
+    app.UseStaticFiles();
+    app.MapControllers();
+    app.MapFallbackToFile("index.html");
 
-app.Run();
+    app.Run();
+}
+catch (Exception ex)
+{
+    Console.Error.WriteLine("Application failed to start: " + ex);
+    throw;
+}
