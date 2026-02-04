@@ -41,6 +41,7 @@ jobs:
             -c Release `
             -r win-x86 `
             --self-contained true `
+            /p:PlatformTarget=x86 `
             -o publish
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
