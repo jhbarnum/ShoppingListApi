@@ -35,15 +35,13 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "10.0.x"
-
-      - name: Publish API (self-contained)
+      - name: Publish API (self-contained, 32-bit for F1)
         run: |
           dotnet publish ShoppingList.Api/ShoppingList.Api.csproj `
             -c Release `
-            -r win-x64 `
+            -r win-x86 `
             --self-contained true `
             -o publish
-
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
