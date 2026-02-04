@@ -1,0 +1,52 @@
+name: Deploy to Azure App Service
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-and-deploy:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: shoppinglist-web/package-lock.json
+
+      - name: Install & build React (Vite)
+        working-directory: shoppinglist-web
+        run: |
+          npm ci
+          npm run build
+
+      - name: Copy React build into API wwwroot
+        run: |
+          if (Test-Path "ShoppingList.Api/wwwroot") { Remove-Item -Recurse -Force "ShoppingList.Api/wwwroot" }
+          New-Item -ItemType Directory -Force -Path "ShoppingList.Api/wwwroot" | Out-Null
+          Copy-Item -Recurse "shoppinglist-web/dist/*" "ShoppingList.Api/wwwroot/"
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Publish API (self-contained)
+        run: |
+          dotnet publish ShoppingList.Api/ShoppingList.Api.csproj `
+            -c Release `
+            -r win-x64 `
+            --self-contained true `
+            -o publish
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ExampleTestApp
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE }}
+          package: publish
