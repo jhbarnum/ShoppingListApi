@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 
 export default function App() {
+  // Use Vite env `VITE_API_BASE` to allow a configurable API origin.
+  // Leave empty for a relative path during local dev.
+  const API_BASE = import.meta.env.VITE_API_BASE || "";
   const [items, setItems] = useState([]);
   const [name, setName] = useState("");
   const [quantity, setQuantity] = useState(1);
@@ -9,7 +12,7 @@ export default function App() {
 
   async function loadItems() {
     setError("");
-    const res = await fetch("/api/items");
+    const res = await fetch(`${API_BASE}/api/items`);
     if (!res.ok) throw new Error("Failed to load items");
     const data = await res.json();
     setItems(data);
@@ -25,7 +28,7 @@ export default function App() {
     setError("");
 
     try {
-      const res = await fetch("/api/items", {
+      const res = await fetch(`${API_BASE}/api/items`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, quantity: Number(quantity), isChecked: false }),
@@ -48,7 +51,7 @@ export default function App() {
 
   async function deleteItem(id) {
     setError("");
-    const res = await fetch(`/api/items/${id}`, { method: "DELETE" });
+    const res = await fetch(`${API_BASE}/api/items/${id}`, { method: "DELETE" });
     if (!res.ok) {
       setError("Failed to delete item");
       return;
@@ -98,7 +101,7 @@ export default function App() {
                     try {
                       // optimistic UI
                       setItems((prev) => prev.map(x => x.id === item.id ? {...x, isChecked: newVal} : x));
-                      const res = await fetch(`/api/items/${item.id}`, {
+                      const res = await fetch(`${API_BASE}/api/items/${item.id}`, {
                         method: 'PATCH',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ isChecked: newVal }),
