@@ -21,7 +21,10 @@ jobs:
 
       - name: Install & build React (Vite)
         working-directory: shoppinglist-web
+        env:
+          VITE_API_BASE: ${{ secrets.VITE_API_BASE }}
         run: |
+          echo "Using VITE_API_BASE=$VITE_API_BASE"
           npm ci
           npm run build
 
