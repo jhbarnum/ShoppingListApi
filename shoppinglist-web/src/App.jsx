@@ -11,6 +11,30 @@ export default function App() {
   const API_BASE = RAW_API_BASE && (RAW_API_BASE.includes('<') || RAW_API_BASE.includes('your-api') || RAW_API_BASE.includes('>'))
     ? ''
     : RAW_API_BASE;
+  
+  // Helper to build a safe URL for API calls. This avoids duplicate-hostname
+  // issues when deployment env vars contain an accidental full domain in the
+  // path. If API_BASE is empty we return a relative path.
+  function buildApiUrl(path) {
+    // ensure path starts with '/'
+    const cleanPath = path.startsWith('/') ? path : `/${path}`;
+    if (!API_BASE) return cleanPath;
+
+    try {
+      // If API_BASE is absolute, parse it. Otherwise treat it as a path under current origin.
+      const baseCandidate = API_BASE.startsWith('http') ? API_BASE : window.location.origin + (API_BASE.startsWith('/') ? API_BASE : `/${API_BASE}`);
+      const parsed = new URL(baseCandidate);
+
+      // Remove accidental occurrences of the hostname embedded in the pathname
+      const cleanedPathname = parsed.pathname.replace(new RegExp(parsed.hostname, 'g'), '').replace(/\/+/g, '/');
+      const cleanedBase = parsed.origin + (cleanedPathname === '/' ? '' : cleanedPathname.replace(/\/$/, ''));
+
+      return new URL(cleanPath.replace(/^\/+/, ''), cleanedBase + '/').toString();
+    } catch (e) {
+      // Fall back to simple concatenation
+      return (API_BASE.replace(/\/+$/, '') || '') + cleanPath;
+    }
+  }
   const [items, setItems] = useState([]);
   const [name, setName] = useState("");
   const [quantity, setQuantity] = useState(1);
@@ -19,10 +43,22 @@ export default function App() {
 
   async function loadItems() {
     setError("");
-    const res = await fetch(`${API_BASE}/api/items`);
-    if (!res.ok) throw new Error("Failed to load items");
-    const data = await res.json();
-    setItems(data);
+    const url = buildApiUrl('/api/items');
+    const res = await fetch(url);
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(text || `Failed to load items (${res.status})`);
+    }
+
+    const contentType = res.headers.get("content-type") || "";
+    if (contentType.includes("application/json")) {
+      const data = await res.json();
+      setItems(data);
+    } else {
+      // Received HTML (probably an error page or SPA fallback) instead of JSON
+      const text = await res.text();
+      throw new Error(`Expected JSON but got HTML: ${text.slice(0,200)}`);
+    }
   }
 
   useEffect(() => {
@@ -40,7 +76,7 @@ export default function App() {
     setError("");
 
     try {
-      const res = await fetch(`${API_BASE}/api/items`, {
+      const res = await fetch(buildApiUrl('/api/items'), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, quantity: Number(quantity), isChecked: false }),
@@ -63,7 +99,7 @@ export default function App() {
 
   async function deleteItem(id) {
     setError("");
-    const res = await fetch(`${API_BASE}/api/items/${id}`, { method: "DELETE" });
+    const res = await fetch(buildApiUrl(`/api/items/${id}`), { method: "DELETE" });
     if (!res.ok) {
       setError("Failed to delete item");
       return;
@@ -113,7 +149,7 @@ export default function App() {
                     try {
                       // optimistic UI
                       setItems((prev) => prev.map(x => x.id === item.id ? {...x, isChecked: newVal} : x));
-                      const res = await fetch(`${API_BASE}/api/items/${item.id}`, {
+                      const res = await fetch(buildApiUrl(`/api/items/${item.id}`), {
                         method: 'PATCH',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ isChecked: newVal }),
