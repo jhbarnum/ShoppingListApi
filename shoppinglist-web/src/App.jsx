@@ -2,8 +2,12 @@ import { useEffect, useState } from "react";
 
 export default function App() {
   // Use Vite env `VITE_API_BASE` to allow a configurable API origin.
-  // Leave empty for a relative path during local dev.
-  const API_BASE = import.meta.env.VITE_API_BASE || "";
+  // Default to a relative path (empty string) so the app works when
+  // served from the same origin (production/Azure). Only use a
+  // non-empty `VITE_API_BASE` when explicitly provided (e.g. during
+  // local development if you run the API on a different port).
+  const rawApiBase = import.meta.env.VITE_API_BASE;
+  const API_BASE = rawApiBase && rawApiBase !== "" ? rawApiBase.replace(/\/+$/, "") : "";
   const [items, setItems] = useState([]);
   const [name, setName] = useState("");
   const [quantity, setQuantity] = useState(1);
