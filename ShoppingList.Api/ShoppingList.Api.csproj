@@ -18,4 +18,13 @@
 	<PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.*" />
 </ItemGroup>
 
+  <!-- Use the Windows-native SQLite provider on Windows App Service to avoid
+       native library bitness/mismatch errors (BadImageFormat). This package
+       uses the built-in winsqlite3 on Windows. Keep bundle_e_sqlite3 for other
+       platforms if you publish to Linux, but on Windows App Service the
+       winsqlite3 bundle is more reliable. -->
+  <ItemGroup>
+    <PackageReference Include="SQLitePCLRaw.bundle_winsqlite3" Version="2.*" />
+  </ItemGroup>
+
 </Project>
