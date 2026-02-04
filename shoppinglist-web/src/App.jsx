@@ -6,8 +6,11 @@ export default function App() {
   // served from the same origin (production/Azure). Only use a
   // non-empty `VITE_API_BASE` when explicitly provided (e.g. during
   // local development if you run the API on a different port).
-  const rawApiBase = import.meta.env.VITE_API_BASE;
-  const API_BASE = rawApiBase && rawApiBase !== "" ? rawApiBase.replace(/\/+$/, "") : "";
+  const RAW_API_BASE = import.meta.env.VITE_API_BASE || "";
+  // guard against the placeholder value like "https://<your-api>.azurewebsites.net"
+  const API_BASE = RAW_API_BASE && (RAW_API_BASE.includes('<') || RAW_API_BASE.includes('your-api') || RAW_API_BASE.includes('>'))
+    ? ''
+    : RAW_API_BASE;
   const [items, setItems] = useState([]);
   const [name, setName] = useState("");
   const [quantity, setQuantity] = useState(1);
@@ -23,6 +26,11 @@ export default function App() {
   }
 
   useEffect(() => {
+    if (RAW_API_BASE && API_BASE === '') {
+      setError('VITE_API_BASE appears to be a placeholder. Set VITE_API_BASE to your API origin (no angle brackets).');
+      return;
+    }
+
     loadItems().catch((e) => setError(e.message));
   }, []);
 
