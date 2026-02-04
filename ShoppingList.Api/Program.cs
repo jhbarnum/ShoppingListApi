@@ -3,9 +3,16 @@ using ShoppingList.Api.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// SQLite DB
+// Determine a writable directory for the SQLite DB. On Azure App Service the
+// app content may be read-only when running from a package, so use the
+// platform LocalApplicationData folder which maps to a writable location.
+var dataDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "ShoppingListApp");
+Directory.CreateDirectory(dataDir);
+var dbPath = Path.Combine(dataDir, "shoppinglist.db");
+
+// SQLite DB (use the computed absolute path)
 builder.Services.AddDbContext<AppDbContext>(opt =>
-    opt.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+    opt.UseSqlite($"Data Source={dbPath}"));
 
 // Add controllers
 builder.Services.AddControllers();
@@ -23,14 +30,20 @@ var app = builder.Build();
 
 app.UseCors("dev");
 
-var dataDir = Path.Combine(app.Environment.ContentRootPath, "App_Data");
-Directory.CreateDirectory(dataDir);
-
-// Ensure DB exists + apply migrations automatically (dev-friendly)
+// Ensure DB exists + apply migrations automatically (capture and log errors)
 using (var scope = app.Services.CreateScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.Migrate();
+    try
+    {
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        db.Database.Migrate();
+    }
+    catch (Exception ex)
+    {
+        // Write startup migration errors to console so they appear in App Service logs / Kudu
+        Console.Error.WriteLine("ERROR applying migrations: " + ex);
+        throw; // rethrow so the host fails loudly (you'll see the error in logs)
+    }
 }
 
 // Use controllers for API endpoints
