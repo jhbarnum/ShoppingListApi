@@ -10,6 +10,15 @@ var dataDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.L
 Directory.CreateDirectory(dataDir);
 var dbPath = Path.Combine(dataDir, "shoppinglist.db");
 
+// Ensure logs directory exists so App Service/ANCM can write stdout logs when enabled.
+// Prefer Azure App Service writable folder (HOME -> D:\home) when available, otherwise
+// fall back to LocalApplicationData or the app base directory.
+var logsBase = Environment.GetEnvironmentVariable("HOME")
+               ?? Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)
+               ?? AppContext.BaseDirectory;
+var logsDir = Path.Combine(logsBase, "LogFiles");
+Directory.CreateDirectory(logsDir);
+
 // SQLite DB (use the computed absolute path)
 builder.Services.AddDbContext<AppDbContext>(opt =>
     opt.UseSqlite($"Data Source={dbPath}"));
