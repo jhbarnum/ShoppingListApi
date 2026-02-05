@@ -123,16 +123,19 @@ export default function App() {
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
-        <input
-          className="input input-number"
-          type="number"
-          min="1"
-          value={quantity}
-          onChange={(e) => setQuantity(e.target.value)}
-        />
-        <button className="btn primary" disabled={loading || !name.trim()}>
-          {loading ? "Adding..." : "Add"}
-        </button>
+
+        <div className="controls-row">
+          <input
+            className="input input-number"
+            type="number"
+            min="1"
+            value={quantity}
+            onChange={(e) => setQuantity(e.target.value)}
+          />
+          <button className="btn primary" disabled={loading || !name.trim()}>
+            {loading ? "Adding..." : "Add"}
+          </button>
+        </div>
       </form>
 
       {error && <div className="error">{error}</div>}
