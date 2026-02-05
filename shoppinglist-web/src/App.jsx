@@ -14,9 +14,21 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // Persist a client-side owner id so the backend receives X-User-Id on requests
+  const getOwnerId = () => {
+    const key = "shoppinglist.ownerId";
+    let id = localStorage.getItem(key);
+    if (!id) {
+      id = (crypto && crypto.randomUUID) ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2,9)}`;
+      localStorage.setItem(key, id);
+    }
+    return id;
+  };
+
   async function loadItems() {
     setError("");
-    const res = await fetch(`${API_BASE}/api/items`);
+    const owner = getOwnerId();
+    const res = await fetch(`${API_BASE}/api/items`, { headers: { "X-User-Id": owner } });
     if (!res.ok) throw new Error("Failed to load items");
     const data = await res.json();
     setItems(data);
@@ -32,9 +44,10 @@ export default function App() {
     setError("");
 
     try {
+      const owner = getOwnerId();
       const res = await fetch(`${API_BASE}/api/items`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "X-User-Id": owner },
         body: JSON.stringify({ name, quantity: Number(quantity), isChecked: false }),
       });
 
@@ -55,7 +68,8 @@ export default function App() {
 
   async function deleteItem(id) {
     setError("");
-    const res = await fetch(`${API_BASE}/api/items/${id}`, { method: "DELETE" });
+    const owner = getOwnerId();
+    const res = await fetch(`${API_BASE}/api/items/${id}`, { method: "DELETE", headers: { "X-User-Id": owner } });
     if (!res.ok) {
       setError("Failed to delete item");
       return;
@@ -105,9 +119,10 @@ export default function App() {
                     try {
                       // optimistic UI
                       setItems((prev) => prev.map(x => x.id === item.id ? {...x, isChecked: newVal} : x));
+                      const owner = getOwnerId();
                       const res = await fetch(`${API_BASE}/api/items/${item.id}`, {
                         method: 'PATCH',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: { 'Content-Type': 'application/json', 'X-User-Id': owner },
                         body: JSON.stringify({ isChecked: newVal }),
                       });
                       if (!res.ok) throw new Error('Failed to update item');
