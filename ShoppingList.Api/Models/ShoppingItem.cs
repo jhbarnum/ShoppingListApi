@@ -8,4 +8,7 @@ public class ShoppingItem
     public int Quantity { get; set; } = 1;
     public bool IsChecked { get; set; } = false;
     public DateTime CreatedUtc { get; set; } = DateTime.UtcNow;
+
+    // New: identifies which user owns this item. Client provides via X-User-Id header.
+    public string OwnerId { get; set; } = string.Empty;
 }

@@ -16,10 +16,23 @@ public class ShoppingItemsController : ControllerBase
         _db = db;
     }
 
+    // Helper to read the client-provided user id header
+    private string? GetOwnerId()
+    {
+        if (Request.Headers.TryGetValue("X-User-Id", out var vals))
+            return vals.FirstOrDefault();
+        return null;
+    }
+
     [HttpGet]
     public async Task<IActionResult> Get()
     {
+        var owner = GetOwnerId();
+        if (string.IsNullOrWhiteSpace(owner))
+            return BadRequest("Missing X-User-Id header.");
+
         var items = await _db.ShoppingItems
+            .Where(x => x.OwnerId == owner)
             .OrderByDescending(x => x.CreatedUtc)
             .ToListAsync();
 
@@ -29,6 +42,10 @@ public class ShoppingItemsController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Post([FromBody] CreateShoppingItemRequest req)
     {
+        var owner = GetOwnerId();
+        if (string.IsNullOrWhiteSpace(owner))
+            return BadRequest("Missing X-User-Id header.");
+
         if (string.IsNullOrWhiteSpace(req.Name))
             return BadRequest("Name is required.");
 
@@ -36,7 +53,8 @@ public class ShoppingItemsController : ControllerBase
         {
             Name = req.Name.Trim(),
             Quantity = req.Quantity <= 0 ? 1 : req.Quantity,
-            IsChecked = req.IsChecked
+            IsChecked = req.IsChecked,
+            OwnerId = owner
         };
 
         _db.ShoppingItems.Add(item);
@@ -48,7 +66,11 @@ public class ShoppingItemsController : ControllerBase
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {
-        var item = await _db.ShoppingItems.FindAsync(id);
+        var owner = GetOwnerId();
+        if (string.IsNullOrWhiteSpace(owner))
+            return BadRequest("Missing X-User-Id header.");
+
+        var item = await _db.ShoppingItems.FirstOrDefaultAsync(i => i.Id == id && i.OwnerId == owner);
         if (item is null) return NotFound();
 
         _db.ShoppingItems.Remove(item);
@@ -60,7 +82,11 @@ public class ShoppingItemsController : ControllerBase
     [HttpPatch("{id:guid}")]
     public async Task<IActionResult> Patch(Guid id, [FromBody] UpdateShoppingItemRequest req)
     {
-        var item = await _db.ShoppingItems.FindAsync(id);
+        var owner = GetOwnerId();
+        if (string.IsNullOrWhiteSpace(owner))
+            return BadRequest("Missing X-User-Id header.");
+
+        var item = await _db.ShoppingItems.FirstOrDefaultAsync(i => i.Id == id && i.OwnerId == owner);
         if (item is null) return NotFound();
 
         item.IsChecked = req.IsChecked;
