@@ -73,7 +73,7 @@ export default function App() {
       <form className="add-form" onSubmit={addItem}>
         <input
           className="input input-text"
-          placeholder="Item name"
+          placeholder="Input Item"
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
