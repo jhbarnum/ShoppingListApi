@@ -1,7 +1,7 @@
-// LoginPage.ts
+
 import { type Page, type Locator } from '@playwright/test';
 
-export class LoginPage {
+export class shoppingList {
   readonly page: Page;
   readonly header: Locator;
   readonly textInput: Locator;
