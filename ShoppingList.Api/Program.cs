@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using ShoppingList.Api.Data;
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder(args); 
 
 // Determine a writable directory for the SQLite DB. On Azure App Service the
 // app content may be read-only when running from a package, so use the
@@ -19,14 +19,14 @@ var logsBase = Environment.GetEnvironmentVariable("HOME")
 var logsDir = Path.Combine(logsBase, "LogFiles");
 Directory.CreateDirectory(logsDir);
 
-// SQLite DB (use the computed absolute path)
+// SQLite DB (use the computed absolute path) 
 builder.Services.AddDbContext<AppDbContext>(opt =>
     opt.UseSqlite($"Data Source={dbPath}"));
 
 // Add controllers
 builder.Services.AddControllers();
 
-// CORS for React dev server
+// CORS for React dev server 
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("dev", p =>
@@ -35,7 +35,7 @@ builder.Services.AddCors(options =>
          .AllowAnyMethod());
 });
 
-var app = builder.Build();
+var app = builder.Build(); 
 
 app.UseCors("dev");
 
