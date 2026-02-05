@@ -1,7 +1,6 @@
-
 import { type Page, type Locator } from '@playwright/test';
 
-export class shoppingList {
+export class ShoppingList {
   readonly page: Page;
   readonly header: Locator;
   readonly textInput: Locator;
@@ -9,15 +8,12 @@ export class shoppingList {
 
   constructor(page: Page) {
     this.page = page;
-    // Define locators for elements
-    this.header = page.locator('#username');
+    this.header = page.locator('h1');
     this.textInput = page.locator('#password');
     this.addButton = page.locator('button[type="submit"]');
   }
 
-  // Method to navigate to the list page
-  async goto() {
-    await this.page.goto('https://exampletestapp-hvd2cbazc8gmbsfk.centralus-01.azurewebsites.net/');
+  async goto(url: string) {
+    await this.page.goto(url);
   }
-
 }
