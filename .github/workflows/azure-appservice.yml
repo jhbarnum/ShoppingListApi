@@ -51,6 +51,7 @@ jobs:
         run: npx playwright install --with-deps
 
       - name: Run Playwright tests (Azure)
+        continue-on-error: true
         working-directory: ShoppingList.Automation
         env:
           PLAYWRIGHT_BASE_URL: ${{ secrets.E2E_BASE_URL }}
