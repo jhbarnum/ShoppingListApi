@@ -6,10 +6,11 @@ A small example full-stack shopping list application.
 - Frontend: React (Vite)
 - E2E Test Automation: Playwright (https://exampletestapp-hvd2cbazc8gmbsfk.centralus-01.azurewebsites.net/test-results/index.html#?speedboard)
 
-This repository contains two projects:
+This repository contains three projects:
 
-- `ShoppingList.Api` — ASP.NET Core Web API, data access with EF Core, and serves static frontend files when deployed.
-- `shoppinglist-web` — Vite + React single-page app used during development.
+- `ShoppingList.Api` - ASP.NET Core Web API, data access with EF Core, and serves static frontend files when deployed.
+- `shoppinglist-web` - Vite + React single-page app used during development.
+- `ShoppingList.Automation` - Playwright test automation runs on build.
 
 Tech stack
 
@@ -17,6 +18,7 @@ Tech stack
 - Entity Framework Core (EF Core) with SQLite provider
 - React + Vite for frontend
 - C# for backend logic, JavaScript/JSX for frontend UI
+- Playwright for test automation, Typescript/JavaScript
 
 Prerequisites
 
@@ -174,4 +176,4 @@ Contributing
 
 License
 
-This project is provided as-is for learning and demonstration.
+
