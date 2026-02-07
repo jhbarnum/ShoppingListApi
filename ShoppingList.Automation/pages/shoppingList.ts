@@ -13,7 +13,7 @@ export class ShoppingList {
     this.addButton = page.locator('button[type="submit"]');
   }
 
-  async goto(url: string) {
-    await this.page.goto(url);
+  async goto() {
+    await this.page.goto('/');
   }
 }

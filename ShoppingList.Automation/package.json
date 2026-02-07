@@ -4,12 +4,15 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "playwright test",
+    "test:e2e": "playwright test --headed",
+    "test:e2e:local": "cross-env PLAYWRIGHT_BASE_URL=http://localhost:5173 playwright test --headed",
+    "test:e2e:azure": "cross-env PLAYWRIGHT_BASE_URL=https://exampletestapp-hvd2cbazc8gmbsfk.centralus-01.azurewebsites.net playwright test --headed",
     "test:headed": "playwright test --headed",
     "test:report": "playwright show-report"
   },
   "devDependencies": {
     "@playwright/test": "^1.44.0",
-    "@types/node": "^25.2.1"
+    "@types/node": "^25.2.1",
+    "cross-env": "^10.1.0"
   }
 }
