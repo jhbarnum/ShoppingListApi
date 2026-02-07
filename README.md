@@ -4,11 +4,13 @@ A small example full-stack shopping list application.
 
 - Backend: ASP.NET Core (.NET 10) Web API using Entity Framework Core and SQLite
 - Frontend: React (Vite)
+- E2E Test Automation: Playwright (https://exampletestapp-hvd2cbazc8gmbsfk.centralus-01.azurewebsites.net/test-results/index.html#?speedboard)
 
-This repository contains two projects:
+This repository contains three projects:
 
-- `ShoppingList.Api` — ASP.NET Core Web API, data access with EF Core, and serves static frontend files when deployed.
-- `shoppinglist-web` — Vite + React single-page app used during development.
+- `ShoppingList.Api` - ASP.NET Core Web API, data access with EF Core, and serves static frontend files when deployed.
+- `shoppinglist-web` - Vite + React single-page app used during development.
+- `ShoppingList.Automation` - Playwright test automation runs on build.
 
 Tech stack
 
@@ -16,6 +18,7 @@ Tech stack
 - Entity Framework Core (EF Core) with SQLite provider
 - React + Vite for frontend
 - C# for backend logic, JavaScript/JSX for frontend UI
+- Playwright for test automation, Typescript/JavaScript
 
 Prerequisites
 
@@ -48,7 +51,7 @@ Local development
 
    Troubleshooting
 
-   - "The model for context 'AppDbContext' has pending changes" — create and apply a migration as shown above.
+   - "The model for context 'AppDbContext' has pending changes" â€” create and apply a migration as shown above.
    - API expects an `X-User-Id` header on most item APIs (used to scope items to a user). The frontend sets a persistent client-side value by default.
 
 2. Frontend (Dev)
@@ -80,9 +83,9 @@ This project can be built and deployed automatically using GitHub Actions. The r
 
 Recommended GitHub repository secrets
 
-- `AZURE_WEBAPP_NAME` — the name of the Azure Web App
-- `AZURE_WEBAPP_PUBLISH_PROFILE` — (optional) the publish profile XML content from the App Service (preferred for simplicity)
-- `AZURE_CREDENTIALS` — (alternative) service principal JSON used with `azure/login` action if you prefer service principal auth
+- `AZURE_WEBAPP_NAME` â€” the name of the Azure Web App
+- `AZURE_WEBAPP_PUBLISH_PROFILE` â€” (optional) the publish profile XML content from the App Service (preferred for simplicity)
+- `AZURE_CREDENTIALS` â€” (alternative) service principal JSON used with `azure/login` action if you prefer service principal auth
 
 Sample GitHub Actions workflow (place under `.github/workflows/ci-cd.yml`)
 
@@ -173,4 +176,4 @@ Contributing
 
 License
 
-This project is provided as-is for learning and demonstration.
+
