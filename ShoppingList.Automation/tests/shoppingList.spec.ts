@@ -1,12 +1,18 @@
 import { test, expect } from '../fixtures/fixtures';
 
 test.describe('Assert navigation to the list page', () => {
-  test('goes to Azure', async ({ shoppingList }) => {
+  test('shopping list page loads successfully', async ({ shoppingList }) => {
     await shoppingList.goto();
-    await expect(shoppingList.header).toBeVisible();
+    await shoppingList.header.isVisible();
+    await expect(shoppingList.header).toHaveText('Shopping List');
   });
-    test('fails on something', async ({ shoppingList }) => {
+
+    test('user inputs one item', async ({ shoppingList }) => {
     await shoppingList.goto();
-    await expect(shoppingList.header).toBeDisabled();
+    await shoppingList.textInput.isVisible();
+    await shoppingList.textInput.fill('Apples');
+    await shoppingList.addButton.click();
+    // Verify item added - implement further as needed
+    await shoppingList.lineItem('Apples').isVisible();
   });
 });

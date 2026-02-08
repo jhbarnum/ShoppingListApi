@@ -119,6 +119,8 @@ export default function App() {
       <form className="add-form" onSubmit={addItem}>
         <input
           className="input input-text"
+          id="item_input"
+          data-testid="item-input"
           placeholder="Input Item"
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -127,12 +129,14 @@ export default function App() {
         <div className="controls-row">
           <input
             className="input input-number"
+            id="item_number_input"
+            data-testid="item_number_input"
             type="number"
             min="1"
             value={quantity}
             onChange={(e) => setQuantity(e.target.value)}
           />
-          <button className="btn primary" disabled={loading || !name.trim()}>
+          <button className="btn primary" id="add_button" data-testid="add_button" disabled={loading || !name.trim()}>
             {loading ? "Adding..." : "Add"}
           </button>
         </div>
@@ -147,6 +151,8 @@ export default function App() {
               <label className="checkbox-label">
                 <input
                   className="checkbox-input"
+                  id={`item_${item.name}`}
+                  data-testid={`checkbox-${item.name}`}
                   type="checkbox"
                   checked={item.isChecked}
                   onChange={async (e) => {
@@ -170,13 +176,13 @@ export default function App() {
                 />
                 <span className="checkbox-ui" aria-hidden="true" />
                 <div>
-                  <div className="item-name">{item.name}</div>
-                  <div className="item-qty">Qty: {item.quantity}</div>
+                  <div className="item-name" data-testid={`name-${item.name}`}>{item.name}</div>
+                  <div className="item-qty" data-testid={`item_count-${item.name}`}>Qty: {item.quantity}</div>
                 </div>
               </label>
             </div>
             <div className="item-actions">
-              <button className="btn danger" onClick={() => deleteItem(item.id)}>
+              <button className="btn danger" data-testid={`delete-${item.name}`} onClick={() => deleteItem(item.id)}>
                 Delete
               </button>
             </div>

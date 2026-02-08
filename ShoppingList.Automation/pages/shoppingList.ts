@@ -5,12 +5,14 @@ export class ShoppingList {
   readonly header: Locator;
   readonly textInput: Locator;
   readonly addButton: Locator;
+  readonly lineItem: (itemName: string) => Locator;
 
   constructor(page: Page) {
     this.page = page;
     this.header = page.locator('h1');
-    this.textInput = page.locator('#password');
-    this.addButton = page.locator('button[type="submit"]');
+    this.textInput = page.getByTestId('item-input');
+    this.addButton = page.getByTestId('add_button');
+    this.lineItem = (itemName: string) => page.getByTestId(`name-${itemName}`);
   }
 
   async goto() {
