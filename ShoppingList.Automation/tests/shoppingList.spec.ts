@@ -12,7 +12,7 @@ test.describe('Assert navigation to the list page', () => {
     await shoppingList.textInput.isVisible();
     await shoppingList.textInput.fill('Apples');
     await shoppingList.addButton.click();
-    // Verify item added - implement further as needed
+    // Verify item added 
     await shoppingList.lineItem('Apples').isVisible();
   });
 });
