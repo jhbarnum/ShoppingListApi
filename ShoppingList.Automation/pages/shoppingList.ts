@@ -16,6 +16,6 @@ export class ShoppingList {
   }
 
   async goto() {
-    await this.page.goto('/');
+    await this.page.goto('/shopping-lists');
   }
 }
