@@ -46,18 +46,29 @@ body {
 .header-top {
   display: flex;
   align-items: center;
-  gap: 16px;
-  margin-bottom: 12px;
+  gap: 12px;
+  margin-bottom: 16px;
 }
 
 .home-link {
   text-decoration: none;
-  color: var(--muted);
-  font-size: 0.95rem;
-  transition: color 180ms;
+  color: var(--text);
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(91,107,255,0.2);
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: background 180ms, border-color 180ms, color 180ms;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
 }
 
 .home-link:hover {
+  background: rgba(91,107,255,0.1);
+  border-color: rgba(91,107,255,0.4);
   color: var(--primary);
 }
 

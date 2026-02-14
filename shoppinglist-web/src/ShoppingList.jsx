@@ -84,7 +84,7 @@ export default function ShoppingList() {
     <div className="app">
       <header className="app-header">
         <div className="header-top">
-          <Link to="/" className="home-link">? Home</Link>
+          <Link to="/" className="home-link">Home</Link>
           <h1>Shopping List</h1>
         </div>
         <p className="subtitle">A simple, elegant way to manage your groceries</p>
